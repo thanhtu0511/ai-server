@@ -20,7 +20,7 @@ app.post("/chat", async (req, res) => {
   try {
     // Gọi Gemini AI
     const response = await client.models.generateContent({
-      model: "gemini-1.5", // hoặc "gemini-2.0-flash" nếu bạn muốn
+      model: "gemini-2.0-flash", // hoặc "gemini-2.0-flash" nếu bạn muốn
       contents: message,
     });
 
