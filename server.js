@@ -1,8 +1,8 @@
 // server.js
-import express from "express";
+import { GoogleGenAI } from "@google/genai";
 import cors from "cors";
 import dotenv from "dotenv";
-import { GoogleGenAI } from "@google/genai";
+import express from "express";
 
 dotenv.config();
 
@@ -12,6 +12,9 @@ app.use(express.json());
 
 // Tạo client GenAI
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+app.get("/", (req, res) => {
+  res.json({ status: "Server is running" });
+});
 
 app.post("/chat", async (req, res) => {
   const { message } = req.body;
@@ -25,9 +28,8 @@ app.post("/chat", async (req, res) => {
     });
 
     // Lấy text từ response
-    const text =
-      response.output?.[0]?.content?.[0]?.text ||
-      "Mình không hiểu, bạn thử nói lại nhé.";
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text || "Mình không hiểu, bạn thử nói lại nhé.";
+
 
     res.json({ text });
   } catch (error) {
