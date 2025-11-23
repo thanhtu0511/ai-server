@@ -39,48 +39,53 @@ app.post("/chat", async (req, res) => {
 });
 // Tạo client Vision API từ Service Account
 const visionClient = new vision.ImageAnnotatorClient();
+function getCategoryAndBreedFromLabels(labels) {
+  // Danh sách nhãn chung cho từng category
+  const categoryLabels = {
+    Dog: ["Dog", "Dog breed", "Canidae", "Puppy", "Mammal"],
+    Cat: ["Cat", "Feline", "Mammal"],
+    Fish: ["Fish", "Aquatic"],
+    Bird: ["Bird", "Avian"]
+  };
+
+  let category = "";
+  let breed = "Unknown";
+
+  // 1️⃣ Xác định Category
+  for (const [cat, commons] of Object.entries(categoryLabels)) {
+    if (labels.some(l => commons.includes(l.description))) {
+      category = cat;
+      break;
+    }
+  }
+
+  // 2️⃣ Xác định Breed (nhãn chi tiết không phải nhãn chung)
+  if (category) {
+    const commonLabels = categoryLabels[category];
+    const detailedLabels = labels
+      .filter(l => !commonLabels.includes(l.description) && l.score > 0.7)
+      .sort((a, b) => b.score - a.score); // ưu tiên score cao
+    if (detailedLabels.length) breed = detailedLabels[0].description;
+  }
+
+  return { category, breed };
+}
 
 app.post("/classify-image", async (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
 
   try {
-    // Gọi Vision API
     const [result] = await visionClient.labelDetection(imageUrl);
-    const labels = result.labelAnnotations?.map(l => l.description) || [];
+    const labels = result.labelAnnotations || [];
 
-    console.log("Labels returned from Vision API:", labels);
+    console.log("Labels returned from Vision API:", labels.map(l => ({ desc: l.description, score: l.score })));
 
-    // 1️⃣ Xác định Pet Category dựa trên nhãn chung
-    let category = "";
-    if (labels.some(l => ["Dog", "Dog breed", "Canidae", "Puppy"].includes(l))) {
-      category = "Dog";
-    } else if (labels.some(l => ["Cat", "Feline"].includes(l))) {
-      category = "Cat";
-    } else if (labels.some(l => ["Fish", "Aquatic"].includes(l))) {
-      category = "Fish";
-    } else if (labels.some(l => ["Bird", "Avian"].includes(l))) {
-      category = "Bird";
-    }
-
-    // 2️⃣ Xác định Breed
-    let breed = "Unknown";
-    if (category === "Dog") {
-      // Lấy nhãn nào không phải nhãn chung của Dog làm breed
-      const dogLabels = labels.filter(l => !["Dog", "Dog breed", "Canidae", "Puppy"].includes(l));
-      if (dogLabels.length) breed = dogLabels[0];
-    } else if (category === "Cat") {
-      const catLabels = labels.filter(l => !["Cat", "Feline"].includes(l));
-      if (catLabels.length) breed = catLabels[0];
-    }
+    const { category, breed } = getCategoryAndBreedFromLabels(labels);
 
     console.log(`Detected Category: ${category}, Breed: ${breed}`);
 
-    // 3️⃣ Trả kết quả
-    return res.json({
-      category,
-      breed
-    });
+    return res.json({ category, breed });
 
   } catch (error) {
     console.error("Vision API error:", error);
