@@ -3,7 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-
+import vision from "@google-cloud/vision";
 dotenv.config();
 
 const app = express();
@@ -37,42 +37,39 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ error: "AI request failed" });
   }
 });
+// Tạo client Vision API từ Service Account
+const visionClient = new vision.ImageAnnotatorClient();
+
 app.post("/classify-image", async (req, res) => {
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
 
   try {
-    const prompt = `
-Nhìn vào hình ảnh này: ${imageUrl}.
-Phân loại con vật này thành một trong các category: "Dogs", "Cats", "Fish", "Birds".
-Trả về duy nhất 1 JSON với 2 key:
-- "category": giá trị là "Dogs", "Cats", "Fish" hoặc "Birds"
-- "breed": tên giống loài nếu biết, hoặc "" nếu không biết
-Ví dụ output đúng:
-{ "category": "Dogs", "breed": "Poodle" }
-Chỉ trả JSON, không thêm lời giải thích.
-`;
+    const [result] = await visionClient.labelDetection(imageUrl);
+    const labels = result.labelAnnotations?.map(l => l.description) || [];
 
-    const response = await client.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
-
-    const text = response.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
-
-    let categoryJson = {};
-    try {
-      categoryJson = JSON.parse(text); // { category: "Dogs", breed: "Poodle" }
-    } catch (e) {
-      console.error("JSON parse failed:", text);
-      categoryJson = { category: "", breed: "" };
+    let category = "";
+    if (labels.some(l => ["Dog", "Dog breed", "Canidae", "Puppy"].includes(l))) {
+      category = "Dogs";
+    } else if (labels.some(l => ["Cat", "Feline"].includes(l))) {
+      category = "Cats";
+    } else if (labels.some(l => ["Fish", "Aquatic"].includes(l))) {
+      category = "Fish";
+    } else if (labels.some(l => ["Bird", "Avian"].includes(l))) {
+      category = "Birds";
     }
 
-    res.json(categoryJson);
+    // Lấy giống loài từ danh sách label (nếu có)
+    const breed = labels[0] || "";
+
+    return res.json({
+      category: category || "",
+      breed: category ? breed : ""
+    });
 
   } catch (error) {
-    console.error("Gemini API error:", error);
-    res.status(500).json({ error: "AI classification failed" });
+    console.error("Vision API error:", error);
+    res.status(500).json({ error: "Image classification failed" });
   }
 });
 
