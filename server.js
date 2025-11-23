@@ -38,9 +38,11 @@ app.post("/chat", async (req, res) => {
   }
 });
 // Tạo client Vision API từ Service Account
+// Tạo client Vision API từ Service Account
 const visionClient = new vision.ImageAnnotatorClient();
-function getCategoryAndBreedFromLabels(labels) {
-  // Danh sách nhãn chung cho từng category
+
+// Chỉ lấy Category
+function getCategoryFromLabels(labels) {
   const categoryLabels = {
     Dog: ["Dog", "Dog breed", "Canidae", "Puppy", "Mammal"],
     Cat: ["Cat", "Feline", "Mammal"],
@@ -48,27 +50,13 @@ function getCategoryAndBreedFromLabels(labels) {
     Bird: ["Bird", "Avian"]
   };
 
-  let category = "";
-  let breed = "Unknown";
-
-  // 1️⃣ Xác định Category
   for (const [cat, commons] of Object.entries(categoryLabels)) {
     if (labels.some(l => commons.includes(l.description))) {
-      category = cat;
-      break;
+      return cat;
     }
   }
 
-  // 2️⃣ Xác định Breed (nhãn chi tiết không phải nhãn chung)
-  if (category) {
-    const commonLabels = categoryLabels[category];
-    const detailedLabels = labels
-      .filter(l => !commonLabels.includes(l.description) && l.score > 0.7)
-      .sort((a, b) => b.score - a.score); // ưu tiên score cao
-    if (detailedLabels.length) breed = detailedLabels[0].description;
-  }
-
-  return { category, breed };
+  return "Unknown"; // Nếu không xác định được
 }
 
 app.post("/classify-image", async (req, res) => {
@@ -81,11 +69,15 @@ app.post("/classify-image", async (req, res) => {
 
     console.log("Labels returned from Vision API:", labels.map(l => ({ desc: l.description, score: l.score })));
 
-    const { category, breed } = getCategoryAndBreedFromLabels(labels);
+    const category = getCategoryFromLabels(labels);
 
-    console.log(`Detected Category: ${category}, Breed: ${breed}`);
+    if (category === "Unknown") {
+      console.log(`Detected Category: Unknown`);
+      return res.json({ category, message: "Cannot identify pet category" });
+    }
 
-    return res.json({ category, breed });
+    console.log(`Detected Category: ${category}`);
+    return res.json({ category });
 
   } catch (error) {
     console.error("Vision API error:", error);
