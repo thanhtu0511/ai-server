@@ -45,26 +45,41 @@ app.post("/classify-image", async (req, res) => {
   if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
 
   try {
+    // Gọi Vision API
     const [result] = await visionClient.labelDetection(imageUrl);
     const labels = result.labelAnnotations?.map(l => l.description) || [];
 
+    console.log("Labels returned from Vision API:", labels);
+
+    // 1️⃣ Xác định Pet Category dựa trên nhãn chung
     let category = "";
     if (labels.some(l => ["Dog", "Dog breed", "Canidae", "Puppy"].includes(l))) {
-      category = "Dogs";
+      category = "Dog";
     } else if (labels.some(l => ["Cat", "Feline"].includes(l))) {
-      category = "Cats";
+      category = "Cat";
     } else if (labels.some(l => ["Fish", "Aquatic"].includes(l))) {
       category = "Fish";
     } else if (labels.some(l => ["Bird", "Avian"].includes(l))) {
-      category = "Birds";
+      category = "Bird";
     }
 
-    // Lấy giống loài từ danh sách label (nếu có)
-    const breed = labels[0] || "";
+    // 2️⃣ Xác định Breed
+    let breed = "Unknown";
+    if (category === "Dog") {
+      // Lấy nhãn nào không phải nhãn chung của Dog làm breed
+      const dogLabels = labels.filter(l => !["Dog", "Dog breed", "Canidae", "Puppy"].includes(l));
+      if (dogLabels.length) breed = dogLabels[0];
+    } else if (category === "Cat") {
+      const catLabels = labels.filter(l => !["Cat", "Feline"].includes(l));
+      if (catLabels.length) breed = catLabels[0];
+    }
 
+    console.log(`Detected Category: ${category}, Breed: ${breed}`);
+
+    // 3️⃣ Trả kết quả
     return res.json({
-      category: category || "",
-      breed: category ? breed : ""
+      category,
+      breed
     });
 
   } catch (error) {
@@ -72,6 +87,7 @@ app.post("/classify-image", async (req, res) => {
     res.status(500).json({ error: "Image classification failed" });
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
