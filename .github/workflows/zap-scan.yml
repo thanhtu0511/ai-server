@@ -16,24 +16,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Tạo thư mục report và set quyền
+      - name: Prepare report folder
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/zap-reports
+          chmod -R 777 $GITHUB_WORKSPACE/zap-reports
+
       - name: OWASP ZAP Baseline Scan
         id: zap
         uses: zaproxy/action-baseline@v0.10.0
         continue-on-error: true
         with:
           target: https://ai-server-utim.onrender.com
-          cmd_options: -J zap-result.json -r zap-report.html
+          cmd_options: >
+            -J $GITHUB_WORKSPACE/zap-reports/zap-result.json
+            -r $GITHUB_WORKSPACE/zap-reports/zap-report.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check generated reports
+        run: ls -la $GITHUB_WORKSPACE/zap-reports
 
       - name: Upload ZAP HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: OWASP-ZAP-Report-HTML
-          path: zap-report.html
+          path: $GITHUB_WORKSPACE/zap-reports/zap-report.html
 
       - name: Upload ZAP JSON Report
         uses: actions/upload-artifact@v4
         with:
           name: OWASP-ZAP-Report-JSON
-          path: zap-result.json
+          path: $GITHUB_WORKSPACE/zap-reports/zap-result.json
