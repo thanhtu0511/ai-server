@@ -16,13 +16,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: OWASP ZAP Full Scan
+      - name: OWASP ZAP Baseline Scan
         id: zap
-        uses: zaproxy/action-full-scan@v0.6.0
+        uses: zaproxy/action-baseline@v0.10.0
         continue-on-error: true
         with:
           target: https://ai-server-utim.onrender.com
-          cmd_options: -a -J zap-result.json -r zap-report.html || true
+          cmd_options: -J zap-result.json -r zap-report.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
