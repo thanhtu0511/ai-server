@@ -1,0 +1,38 @@
+name: owasp-zap-scan
+
+on:
+  schedule:
+    - cron: '0 18 * * *'   # chạy mỗi ngày 18:00
+  workflow_dispatch:        # chạy thủ công
+
+permissions:
+  contents: read
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: OWASP ZAP Full Scan
+        id: zap
+        uses: zaproxy/action-full-scan@v0.6.0
+        with:
+          target: https://ai-server-utim.onrender.com
+          cmd_options: -a -J zap-result.json -r zap-report.html || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload ZAP HTML Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: OWASP-ZAP-Report-HTML
+          path: zap-report.html
+
+      - name: Upload ZAP JSON Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: OWASP-ZAP-Report-JSON
+          path: zap-result.json
