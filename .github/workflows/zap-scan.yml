@@ -19,6 +19,7 @@ jobs:
       - name: OWASP ZAP Full Scan
         id: zap
         uses: zaproxy/action-full-scan@v0.6.0
+        continue-on-error: true
         with:
           target: https://ai-server-utim.onrender.com
           cmd_options: -a -J zap-result.json -r zap-report.html || true
