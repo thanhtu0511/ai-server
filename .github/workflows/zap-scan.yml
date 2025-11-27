@@ -16,11 +16,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Tạo thư mục report và set quyền
+      # Tạo thư mục để lưu report trên workspace
       - name: Prepare report folder
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/zap-reports
-          chmod -R 777 $GITHUB_WORKSPACE/zap-reports
+        run: mkdir -p $GITHUB_WORKSPACE/zap-reports
 
       - name: OWASP ZAP Baseline Scan
         id: zap
@@ -29,10 +27,16 @@ jobs:
         with:
           target: https://ai-server-utim.onrender.com
           cmd_options: >
-            -J $GITHUB_WORKSPACE/zap-reports/zap-result.json
-            -r $GITHUB_WORKSPACE/zap-reports/zap-report.html
+            -J zap-result.json
+            -r zap-report.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Copy report từ container ra workspace để upload
+      - name: Copy reports to workspace
+        run: |
+          cp zap-result.json $GITHUB_WORKSPACE/zap-reports/
+          cp zap-report.html $GITHUB_WORKSPACE/zap-reports/
 
       - name: Check generated reports
         run: ls -la $GITHUB_WORKSPACE/zap-reports
