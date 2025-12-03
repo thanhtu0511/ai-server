@@ -4,7 +4,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import vision from "@google-cloud/vision";
+import fs from "fs";
 dotenv.config();
+
+console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
+console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 const app = express();
 app.use(cors());
@@ -38,7 +42,7 @@ app.post("/chat", async (req, res) => {
   }
 });
 // Tạo client Vision API từ Service Account
-// Tạo client Vision API từ Service Account
+
 const visionClient = new vision.ImageAnnotatorClient();
 
 // Chỉ lấy Category
