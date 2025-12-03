@@ -61,41 +61,29 @@ function getCategoryFromLabels(labels) {
 
 app.post("/classify-image", async (req, res) => {
   const { imageUrl } = req.body;
+  if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
 
-  if (!imageUrl) {
-    return res.status(400).json({ error: "Image URL is required" });
-  }
   try {
-    console.log("Using Vision API with image:", imageUrl);
-
-    const [result] = await visionClient.labelDetection({
-      image: {
-        source: {
-          imageUri: imageUrl
-        }
-      }
-    });
+    const [result] = await visionClient.labelDetection(imageUrl);
     const labels = result.labelAnnotations || [];
-    console.log("Labels:", labels.map(l => l.description));
+
+    console.log("Labels returned from Vision API:", labels.map(l => ({ desc: l.description, score: l.score })));
 
     const category = getCategoryFromLabels(labels);
 
     if (category === "Unknown") {
-      return res.json({
-        category,
-        message: "Cannot identify pet category"
-      });
+      console.log(`Detected Category: Unknown`);
+      return res.json({ category, message: "Cannot identify pet category" });
     }
+
+    console.log(`Detected Category: ${category}`);
     return res.json({ category });
+
   } catch (error) {
     console.error("Vision API error:", error);
-    return res.status(500).json({
-      error: "Image classification failed",
-      details: error.message
-    });
+    res.status(500).json({ error: "Image classification failed" });
   }
 });
-
 
 
 const PORT = process.env.PORT || 3000;
