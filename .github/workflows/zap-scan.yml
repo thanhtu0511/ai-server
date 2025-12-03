@@ -2,53 +2,23 @@ name: owasp-zap-scan
 
 on:
   schedule:
-    - cron: '0 18 * * *'   # chạy mỗi ngày 18:00
-  workflow_dispatch:        # chạy thủ công
-
-permissions:
-  contents: read
+    - cron: '0 11 * * *'
+  workflow_dispatch:
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Tạo thư mục để lưu report trên workspace
-      - name: Prepare report folder
-        run: mkdir -p $GITHUB_WORKSPACE/zap-reports
-
-      - name: OWASP ZAP Baseline Scan
-        id: zap
-        uses: zaproxy/action-baseline@v0.10.0
-        continue-on-error: true
+      - name: OWASP ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.6.0
         with:
           target: https://ai-server-utim.onrender.com
-          cmd_options: >
-            -J zap-result.json
-            -r zap-report.html
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cmd_options: -J zap-result.json -r zap-report.html || true
 
-      # Copy report từ container ra workspace để upload
-      - name: Copy reports to workspace
-        run: |
-          cp zap-result.json $GITHUB_WORKSPACE/zap-reports/
-          cp zap-report.html $GITHUB_WORKSPACE/zap-reports/
-
-      - name: Check generated reports
-        run: ls -la $GITHUB_WORKSPACE/zap-reports
-
-      - name: Upload ZAP HTML Report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: OWASP-ZAP-Report-HTML
-          path: $GITHUB_WORKSPACE/zap-reports/zap-report.html
-
-      - name: Upload ZAP JSON Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: OWASP-ZAP-Report-JSON
-          path: $GITHUB_WORKSPACE/zap-reports/zap-result.json
+          name: ZAP-HTML
+          path: zap-report.html
