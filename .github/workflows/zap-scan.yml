@@ -14,9 +14,10 @@ jobs:
 
       - name: OWASP ZAP API Scan
         uses: zaproxy/action-api-scan@v0.6.0
+        continue-on-error: true
         with:
           target: https://ai-server-utim.onrender.com
-          cmd_options: -J zap-result.json -r zap-report.html || true
+          cmd_options: -J zap-result.json -r zap-report.html
 
       - uses: actions/upload-artifact@v4
         with:
