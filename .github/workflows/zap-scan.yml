@@ -17,9 +17,14 @@ jobs:
         continue-on-error: true
         with:
           target: https://ai-server-utim.onrender.com
-          cmd_options: -J zap-result.json -r zap-report.html
+          cmd_options: -w . -J zap-result.json -r zap-report.html
 
       - uses: actions/upload-artifact@v4
         with:
           name: ZAP-HTML
           path: zap-report.html
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZAP-JSON
+          path: zap-result.json
