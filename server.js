@@ -19,7 +19,7 @@ admin.initializeApp({
   credential: admin.credential.cert(process.env.FIREBASE_ADMIN_CREDENTIALS),
 });
 
-const db = admin.firestore();
+const firestore = admin.firestore();
 // API tạo admin
 app.post("/add-admin", async (req, res) => {
   try {
