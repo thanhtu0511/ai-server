@@ -20,26 +20,39 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-app.post("/create-admin", async (req, res) => {
+// API tạo admin
+app.post("/add-admin", async (req, res) => {
   try {
-    const { uid, username, email, imageUrl, dateofbirth, role, createdBy } = req.body;
+    const { username, email, password, imageUrl, dateOfBirth, role, createdBy } = req.body;
 
-    await db.collection("Admin").doc(uid).set({
-      uid,
+    if (!username || !email || !password || !imageUrl) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    // 1. Tạo user Firebase Auth
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+    });
+
+    // 2. Lưu vào Firestore
+    await firestore.collection("Admin").doc(userRecord.uid).set({
+      uid: userRecord.uid,
       username,
       email,
       imageUrl,
-      dateofbirth,
+      dateofbirth: dateOfBirth,
       role,
       createdBy
     });
 
-    return res.json({ message: "Admin created!" });
-  } catch (error) {
-    console.error("Create admin error:", error);
-    return res.status(500).json({ error: error.message });
+    res.json({ success: true, uid: userRecord.uid });
+  } catch (err) {
+    console.error("ADD ADMIN ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 });
+
 // Tạo client GenAI
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 app.get("/", (req, res) => {
