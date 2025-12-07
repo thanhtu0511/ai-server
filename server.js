@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import express from "express";
 import vision from "@google-cloud/vision";
 import fs from "fs";
+import admin from "firebase-admin";
 dotenv.config();
 
 console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
@@ -13,7 +14,32 @@ console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CR
 const app = express();
 app.use(cors());
 app.use(express.json());
+// firebase admin
+admin.initializeApp({
+  credential: admin.credential.cert(process.env.FIREBASE_ADMIN_CREDENTIALS),
+});
 
+const db = admin.firestore();
+app.post("/create-admin", async (req, res) => {
+  try {
+    const { uid, username, email, imageUrl, dateofbirth, role, createdBy } = req.body;
+
+    await db.collection("Admin").doc(uid).set({
+      uid,
+      username,
+      email,
+      imageUrl,
+      dateofbirth,
+      role,
+      createdBy
+    });
+
+    return res.json({ message: "Admin created!" });
+  } catch (error) {
+    console.error("Create admin error:", error);
+    return res.status(500).json({ error: error.message });
+  }
+});
 // Tạo client GenAI
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 app.get("/", (req, res) => {
