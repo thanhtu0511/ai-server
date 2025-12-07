@@ -87,10 +87,10 @@ const visionClient = new vision.ImageAnnotatorClient();
 // Chỉ lấy Category
 function getCategoryFromLabels(labels) {
   const categoryLabels = {
-    Dog: ["Dog", "Dog breed", "Canidae", "Puppy", "Mammal"],
-    Cat: ["Cat", "Feline", "Mammal"],
+    Dogs: ["Dog", "Dog breed", "Canidae", "Puppy", "Mammal"],
+    Cats: ["Cat", "Feline", "Mammal"],
     Fish: ["Fish", "Aquatic"],
-    Bird: ["Bird", "Avian"]
+    Birds: ["Bird", "Avian"]
   };
 
   for (const [cat, commons] of Object.entries(categoryLabels)) {
