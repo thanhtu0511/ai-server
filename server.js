@@ -14,6 +14,7 @@ console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CR
 
 const router = express.Router();
 const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
+app.use("/", router);
 
 // Lấy danh sách user
 router.get("/users", async (req, res) => {
