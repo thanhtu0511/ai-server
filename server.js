@@ -6,7 +6,6 @@ import express from "express";
 import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
-import express from "express";
 import axios from "axios";
 dotenv.config();
 
