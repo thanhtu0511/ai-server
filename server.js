@@ -75,10 +75,20 @@ router.post("/users/:id/lock", async (req, res) => {
 
     res.json({ message: "User locked successfully" });
   } catch (err) {
-    console.log("Lock error:", err.response?.data || err.message);
+    console.error("=========================================");
+    console.error(`[LOCK FAILED] ID: ${req.params.id}`);
+    // Log Response Data từ Clerk
+    if (err.response) {
+    console.error(`STATUS CODE: ${err.response.status}`);
+    console.error("CLERK ERROR RESPONSE:", JSON.stringify(err.response.data, null, 2));
+    } else {
+    console.error("NETWORK/AXIOS ERROR:", err.message);
+    }
+    console.error("=========================================");
+
     res.status(500).json({ error: "Failed to lock user" });
-  }
-});
+    }
+    });
 
 router.post("/users/:id/unlock", async (req, res) => {
   try {
