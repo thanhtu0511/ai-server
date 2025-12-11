@@ -62,7 +62,7 @@ app.post("/users/:id/lock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerkClient.users.updateUser(userId, { locked: true });
+    await clerkClient.users.updateUser(userId, { banned: true });
 
     res.json({ message: "User locked successfully" });
   } catch (err) {
@@ -74,7 +74,7 @@ app.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerkClient.users.updateUser(userId, { locked: false });
+    await clerkClient.users.updateUser(userId, { banned: false });
 
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
