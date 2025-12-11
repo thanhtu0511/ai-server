@@ -6,10 +6,45 @@ import express from "express";
 import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
+import express from "express";
+import axios from "axios";
 dotenv.config();
 
 console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
 console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
+const router = express.Router();
+const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
+
+// Lấy danh sách user
+router.get("/users", async (req, res) => {
+  try {
+    const results = await axios.get(
+      "https://api.clerk.com/v1/users",
+      {
+        headers: { Authorization: `Bearer ${CLERK_SECRET}` }
+      }
+    );
+    res.json(results.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Xóa user
+router.delete("/users/:id", async (req, res) => {
+  try {
+    await axios.delete(
+      `https://api.clerk.com/v1/users/${req.params.id}`,
+      {
+        headers: { Authorization: `Bearer ${CLERK_SECRET}` }
+      }
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 const app = express();
 app.use(cors());
