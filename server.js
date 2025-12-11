@@ -19,7 +19,6 @@ app.use(express.json());
 const router = express.Router();
 const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
 app.use("/", router);
-const clerk = Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
 
 // Lấy danh sách user
 router.get("/users", async (req, res) => {
