@@ -7,10 +7,12 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
-import { clerkClient } from "@clerk/backend";
+import { createClerkClient } from "@clerk/backend";
 
 dotenv.config();
-
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY ?? "",
+});
 console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
 console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
@@ -58,33 +60,27 @@ router.delete("/users/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// Lock user
 router.post("/users/:id/lock", async (req, res) => {
-  const userId = req.params.id;
   try {
-    await clerkClient.users.updateUser(userId, {
-      banned: true,
-    });
+    const userId = req.params.id;
+    await clerk.users.lockUser(userId);  // lock
     res.json({ message: "User locked successfully" });
   } catch (err) {
     console.error("Lock error:", err);
     res.status(500).json({ error: "Failed to lock user" });
   }
 });
-
-// Unlock user
 router.post("/users/:id/unlock", async (req, res) => {
-  const userId = req.params.id;
   try {
-    await clerkClient.users.updateUser(userId, {
-      banned: false,
-    });
+    const userId = req.params.id;
+    await clerk.users.unbanUser(userId); // unban
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
     console.error("Unlock error:", err);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
+
 
 
 
