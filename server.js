@@ -7,6 +7,7 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
+import { clerkClient } from "@clerk/backend";
 
 dotenv.config();
 
@@ -57,60 +58,34 @@ router.delete("/users/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// Lock user
 router.post("/users/:id/lock", async (req, res) => {
-  console.log(`[*** LOCK START ***] ID: ${req.params.id}`);
+  const userId = req.params.id;
   try {
-    const userId = req.params.id;
-
-    await axios.patch(
-      `https://api.clerk.com/v1/users/${userId}`,
-      { locked: true },
-      {
-        headers: {
-          Authorization: `Bearer ${CLERK_SECRET}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
+    await clerkClient.users.updateUser(userId, {
+      banned: true,
+    });
     res.json({ message: "User locked successfully" });
   } catch (err) {
-    console.error("=========================================");
-    console.error(`[LOCK FAILED] ID: ${req.params.id}`);
-    // Log Response Data từ Clerk
-    if (err.response) {
-    console.error(`STATUS CODE: ${err.response.status}`);
-    console.error("CLERK ERROR RESPONSE:", JSON.stringify(err.response.data, null, 2));
-    } else {
-    console.error("NETWORK/AXIOS ERROR:", err.message);
-    }
-    console.error("=========================================");
-
+    console.error("Lock error:", err);
     res.status(500).json({ error: "Failed to lock user" });
-    }
-    });
+  }
+});
 
+// Unlock user
 router.post("/users/:id/unlock", async (req, res) => {
+  const userId = req.params.id;
   try {
-    const userId = req.params.id;
-
-    await axios.patch(
-      `https://api.clerk.com/v1/users/${userId}`,
-      { locked: false },
-      {
-        headers: {
-          Authorization: `Bearer ${CLERK_SECRET}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
+    await clerkClient.users.updateUser(userId, {
+      banned: false,
+    });
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
-    console.log("Unlock error:", err.response?.data || err.message);
+    console.error("Unlock error:", err);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
+
 
 
 
