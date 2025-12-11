@@ -63,7 +63,7 @@ router.post("/users/:id/lock", async (req, res) => {
 
     await axios.patch(
       `https://api.clerk.com/v1/users/${userId}`,
-      { banned: true },
+      { locked: true },
       {
         headers: {
           Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
@@ -85,7 +85,7 @@ router.post("/users/:id/unlock", async (req, res) => {
 
     await axios.patch(
       `https://api.clerk.com/v1/users/${userId}`,
-      { banned: false },
+      { locked: false },
       {
         headers: {
           Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
