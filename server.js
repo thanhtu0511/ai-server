@@ -7,6 +7,8 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
+import { clerkClient } from "@clerk/clerk-sdk-node";
+
 dotenv.config();
 
 console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
