@@ -58,6 +58,7 @@ router.delete("/users/:id", async (req, res) => {
   }
 });
 router.post("/users/:id/lock", async (req, res) => {
+  console.log(`[*** LOCK START ***] ID: ${req.params.id}`);
   try {
     const userId = req.params.id;
 
