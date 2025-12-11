@@ -7,7 +7,6 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
-import { Clerk } from "@clerk/backend";
 
 dotenv.config();
 
