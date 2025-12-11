@@ -63,7 +63,7 @@ router.delete("/users/:id", async (req, res) => {
 router.post("/users/:id/lock", async (req, res) => {
   try {
     const userId = req.params.id;
-    await clerk.users.lockUser(userId);  // lock
+    await clerk.users.banUser(userId); 
     res.json({ message: "User locked successfully" });
   } catch (err) {
     console.error("Lock error:", err);
@@ -73,7 +73,7 @@ router.post("/users/:id/lock", async (req, res) => {
 router.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
-    await clerk.users.unlockUser(userId); // unban
+    await clerk.users.unbanUser(userId); // unban
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
     console.error("Unlock error:", err);
