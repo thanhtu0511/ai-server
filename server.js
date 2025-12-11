@@ -60,6 +60,31 @@ router.delete("/users/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.post("/users/:id/lock", async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    await clerkClient.users.updateUser(userId, { locked: true });
+
+    res.json({ message: "User locked successfully" });
+  } catch (err) {
+    console.log("Error locking user:", err);
+    res.status(500).json({ error: "Failed to lock user" });
+  }
+});
+app.post("/users/:id/unlock", async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    await clerkClient.users.updateUser(userId, { locked: false });
+
+    res.json({ message: "User unlocked successfully" });
+  } catch (err) {
+    console.log("Error unlocking user:", err);
+    res.status(500).json({ error: "Failed to unlock user" });
+  }
+});
+
 
 // firebase admin
 admin.initializeApp({
