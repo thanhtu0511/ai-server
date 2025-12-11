@@ -63,7 +63,7 @@ router.delete("/users/:id", async (req, res) => {
 router.post("/users/:id/lock", async (req, res) => {
   try {
     const userId = req.params.id;
-    await clerk.users.banUser(userId); 
+    await clerk.users.lockUser(userId); 
     res.json({ message: "User locked successfully" });
   } catch (err) {
     console.error("Lock error:", err);
@@ -73,14 +73,26 @@ router.post("/users/:id/lock", async (req, res) => {
 router.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
-    await clerk.users.unbanUser(userId); // unban
+    await clerk.users.unlockUser(userId); // unban
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
     console.error("Unlock error:", err);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
-
+router.get("/users/:id/status", async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    res.json({
+      banned: user.banned || false,
+      locked: user.locked || false
+    });
+  } catch (err) {
+    console.error("Error fetching user status:", err);
+    res.status(500).json({ error: "Failed to fetch user status" });
+  }
+});
 // firebase admin
 admin.initializeApp({
   credential: admin.credential.cert(process.env.FIREBASE_ADMIN_CREDENTIALS),
