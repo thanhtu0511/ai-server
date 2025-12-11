@@ -7,7 +7,7 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { Clerk } from "@clerk/backend";
 
 dotenv.config();
 
@@ -20,6 +20,7 @@ app.use(express.json());
 const router = express.Router();
 const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
 app.use("/", router);
+const clerk = Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
 
 // Lấy danh sách user
 router.get("/users", async (req, res) => {
@@ -62,23 +63,28 @@ app.post("/users/:id/lock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerkClient.users.updateUser(userId, { banned: true });
+    await clerk.users.updateUser(userId, {
+      banned: true,
+    });
 
-    res.json({ message: "User locked successfully" });
+    res.json({ message: "User locked" });
   } catch (err) {
-    console.log("Error locking user:", err);
+    console.error("Lock error:", err);
     res.status(500).json({ error: "Failed to lock user" });
   }
 });
+
 app.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerkClient.users.updateUser(userId, { banned: false });
+    await clerk.users.updateUser(userId, {
+      banned: false,
+    });
 
-    res.json({ message: "User unlocked successfully" });
+    res.json({ message: "User unlocked" });
   } catch (err) {
-    console.log("Error unlocking user:", err);
+    console.error("Unlock error:", err);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
