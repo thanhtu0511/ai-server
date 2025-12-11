@@ -24,8 +24,13 @@ router.get("/users", async (req, res) => {
         headers: { Authorization: `Bearer ${CLERK_SECRET}` }
       }
     );
+
+    console.log("=== Clerk Users API Response ===");
+    console.log(JSON.stringify(results.data, null, 2));
+
     res.json(results.data);
   } catch (error) {
+    console.log("Error fetching users:", error.response?.data || error.message);
     res.status(500).json({ error: error.message });
   }
 });
@@ -33,17 +38,24 @@ router.get("/users", async (req, res) => {
 // Xóa user
 router.delete("/users/:id", async (req, res) => {
   try {
+    console.log("Deleting user ID:", req.params.id);
+
     await axios.delete(
       `https://api.clerk.com/v1/users/${req.params.id}`,
       {
         headers: { Authorization: `Bearer ${CLERK_SECRET}` }
       }
     );
+
+    console.log("Delete success:", req.params.id);
+
     res.json({ success: true });
   } catch (error) {
+    console.log("Error deleting user:", error.response?.data || error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 const app = express();
 app.use(cors());
