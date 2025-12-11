@@ -73,17 +73,13 @@ router.post("/users/:id/lock", async (req, res) => {
 router.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
-    await clerk.users.unbanUser(userId); // unban
+    await clerk.users.unlockUser(userId); // unban
     res.json({ message: "User unlocked successfully" });
   } catch (err) {
     console.error("Unlock error:", err);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
-
-
-
-
 
 // firebase admin
 admin.initializeApp({
