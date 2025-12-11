@@ -7,7 +7,7 @@ import vision from "@google-cloud/vision";
 import fs from "fs";
 import admin from "firebase-admin";
 import axios from "axios";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import Clerk from "@clerk/clerk-sdk-node";
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CR
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+const clerkClient = Clerk({ secretKey: process.env.CLERK_SECRET_KEY });
 const router = express.Router();
 const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
 app.use("/", router);
