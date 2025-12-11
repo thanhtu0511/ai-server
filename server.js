@@ -32,9 +32,6 @@ router.get("/users", async (req, res) => {
       }
     );
 
-    console.log("=== Clerk Users API Response ===");
-    console.log(JSON.stringify(results.data, null, 2));
-
     res.json(results.data);
   } catch (error) {
     console.log("Error fetching users:", error.response?.data || error.message);
