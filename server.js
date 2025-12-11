@@ -66,7 +66,7 @@ router.post("/users/:id/lock", async (req, res) => {
       { locked: true },
       {
         headers: {
-          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+          Authorization: `Bearer ${CLERK_SECRET}`,
           "Content-Type": "application/json"
         }
       }
@@ -88,7 +88,7 @@ router.post("/users/:id/unlock", async (req, res) => {
       { locked: false },
       {
         headers: {
-          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+          Authorization: `Bearer ${CLERK_SECRET}`,
           "Content-Type": "application/json"
         }
       }
