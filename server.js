@@ -12,6 +12,10 @@ dotenv.config();
 console.log("Vision key exists:", fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS));
 console.log("GOOGLE_APPLICATION_CREDENTIALS:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
 const router = express.Router();
 const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
 app.use("/", router);
@@ -57,10 +61,6 @@ router.delete("/users/:id", async (req, res) => {
   }
 });
 
-
-const app = express();
-app.use(cors());
-app.use(express.json());
 // firebase admin
 admin.initializeApp({
   credential: admin.credential.cert(process.env.FIREBASE_ADMIN_CREDENTIALS),
