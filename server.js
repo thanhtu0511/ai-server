@@ -59,35 +59,50 @@ router.delete("/users/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.post("/users/:id/lock", async (req, res) => {
+router.post("/users/:id/lock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerk.users.updateUser(userId, {
-      banned: true,
-    });
+    await axios.patch(
+      `https://api.clerk.com/v1/users/${userId}`,
+      { banned: true },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    res.json({ message: "User locked" });
+    res.json({ message: "User locked successfully" });
   } catch (err) {
-    console.error("Lock error:", err);
+    console.log("Lock error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to lock user" });
   }
 });
 
-app.post("/users/:id/unlock", async (req, res) => {
+router.post("/users/:id/unlock", async (req, res) => {
   try {
     const userId = req.params.id;
 
-    await clerk.users.updateUser(userId, {
-      banned: false,
-    });
+    await axios.patch(
+      `https://api.clerk.com/v1/users/${userId}`,
+      { banned: false },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    res.json({ message: "User unlocked" });
+    res.json({ message: "User unlocked successfully" });
   } catch (err) {
-    console.error("Unlock error:", err);
+    console.log("Unlock error:", err.response?.data || err.message);
     res.status(500).json({ error: "Failed to unlock user" });
   }
 });
+
 
 
 // firebase admin
